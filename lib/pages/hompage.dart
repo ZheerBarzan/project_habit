@@ -1,8 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:project_habit/components/my_drawer.dart';
+import 'package:project_habit/components/my_habit_tile.dart';
 import 'package:project_habit/database/habit_database.dart';
-import 'package:project_habit/theme/theme_provider.dart';
+import 'package:project_habit/model/habit.dart';
+import 'package:project_habit/util/habit_util.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,6 +14,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    Provider.of<HabitDatabase>(context, listen: false).readHabits();
+    super.initState();
+  }
+
   final TextEditingController textController = TextEditingController();
 
   void createNewHabit() {
@@ -25,7 +32,7 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           MaterialButton(
-            child: Text("Save"),
+            child: const Text("Save"),
             onPressed: () {
               String newHabitName = textController.text;
 
@@ -36,10 +43,20 @@ class _HomePageState extends State<HomePage> {
               textController.clear();
             },
           ),
+          MaterialButton(
+            child: const Text("Cancel"),
+            onPressed: () {
+              Navigator.pop(context);
+
+              textController.clear();
+            },
+          ),
         ],
       ),
     );
   }
+
+  void checkHabitOnOff(bool? value, Habit habit) {}
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +73,27 @@ class _HomePageState extends State<HomePage> {
           color: Colors.black,
         ),
       ),
+      body: _buildHabitList(),
+    );
+  }
+
+  Widget _buildHabitList() {
+    final habitDatabase = context.watch<HabitDatabase>();
+
+    List<Habit> currentHabits = habitDatabase.currentHabits;
+
+    return ListView.builder(
+      itemCount: currentHabits.length,
+      itemBuilder: (context, index) {
+        final habit = currentHabits[index];
+        bool isCompleted = isHabitCompletedToday(habit.completedDays);
+
+        return MyHabitTile(
+          isCompleted: isCompleted,
+          text: habit.name,
+          onChanged: (value) => checkHabitOnOff(value, habit),
+        );
+      },
     );
   }
 }
