@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_habit/components/heat_map.dart';
 import 'package:project_habit/components/my_drawer.dart';
 import 'package:project_habit/components/my_habit_tile.dart';
 import 'package:project_habit/database/habit_database.dart';
@@ -145,7 +146,12 @@ class _HomePageState extends State<HomePage> {
           color: Theme.of(context).colorScheme.inversePrimary,
         ),
       ),
-      body: _buildHabitList(),
+      body: ListView(
+        children: [
+          _buildHeatMap(),
+          _buildHabitList(),
+        ],
+      ),
     );
   }
 
@@ -156,6 +162,8 @@ class _HomePageState extends State<HomePage> {
 
     return ListView.builder(
       itemCount: currentHabits.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final habit = currentHabits[index];
         bool isCompleted = isHabitCompletedToday(habit.completedDays);
@@ -167,6 +175,26 @@ class _HomePageState extends State<HomePage> {
           editHabit: (context) => editHabitBox(habit),
           deleteHabit: (context) => deleteHabitBox(habit),
         );
+      },
+    );
+  }
+
+  Widget _buildHeatMap() {
+    final habitDatabase = context.watch<HabitDatabase>();
+
+    List<Habit> currentHabits = habitDatabase.currentHabits;
+
+    return FutureBuilder<DateTime?>(
+      future: habitDatabase.getFirstLunchDate(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return MyHeatMap(
+            startDate: snapshot.data!,
+            dataset: prepDataSet(currentHabits),
+          );
+        } else {
+          return Container();
+        }
       },
     );
   }
