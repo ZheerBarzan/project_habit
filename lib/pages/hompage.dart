@@ -56,7 +56,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void checkHabitOnOff(bool? value, Habit habit) {}
+  void checkHabitOnOff(bool? value, Habit habit) {
+    if (value != null) {
+      context.read<HabitDatabase>().updateHabitCompletion(habit.id, value);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
