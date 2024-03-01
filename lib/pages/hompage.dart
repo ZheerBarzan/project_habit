@@ -62,6 +62,70 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void editHabitBox(Habit habit) {
+    textController.text = habit.name;
+
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: TextField(
+                controller: textController,
+              ),
+              actions: [
+                MaterialButton(
+                  child: const Text("Save"),
+                  onPressed: () {
+                    String newHabitName = textController.text;
+
+                    context
+                        .read<HabitDatabase>()
+                        .updateHabitName(habit.id, newHabitName);
+
+                    Navigator.pop(context);
+
+                    textController.clear();
+                  },
+                ),
+                MaterialButton(
+                  child: const Text("Cancel"),
+                  onPressed: () {
+                    Navigator.pop(context);
+
+                    textController.clear();
+                  },
+                ),
+              ],
+            ));
+  }
+
+  void deleteHabitBox(Habit habit) {
+    textController.text = habit.name;
+
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text("Are you sure?"),
+              actions: [
+                MaterialButton(
+                  child: const Text("delete"),
+                  onPressed: () {
+                    context.read<HabitDatabase>().deleteHabit(
+                          habit.id,
+                        );
+
+                    Navigator.pop(context);
+                  },
+                ),
+                MaterialButton(
+                  child: const Text("Cancel"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +160,8 @@ class _HomePageState extends State<HomePage> {
           isCompleted: isCompleted,
           text: habit.name,
           onChanged: (value) => checkHabitOnOff(value, habit),
+          editHabit: (context) => editHabitBox(habit),
+          deleteHabit: (context) => deleteHabitBox(habit),
         );
       },
     );
